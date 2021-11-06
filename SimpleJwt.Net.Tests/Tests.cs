@@ -61,6 +61,20 @@ namespace SimpleJwt.Net.Tests
                 _validator.Validate<SimpleJwt>(token);
             }));
         }
+
+        [Test]
+        public void TestInvalidSignature()
+        {
+            Assert.Catch<JwtException>((() =>
+            {
+                DateTimeOffset offset = DateTimeOffset.UtcNow.AddSeconds(10);
+                DateTime exp = offset.DateTime;
+
+                string token = _generator.Generate<SimpleJwt>(exp, "user");
+                string strippedSignature = token.Remove(token.Length - 8);
+                _validator.Validate<SimpleJwt>(strippedSignature);
+            }));
+        }
     }
 
     internal struct SimpleJwt : IJwtPayload

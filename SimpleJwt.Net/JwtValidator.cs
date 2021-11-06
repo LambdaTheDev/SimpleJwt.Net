@@ -25,6 +25,12 @@ namespace SimpleJwt.Net
             if (splitToken.Length != 3)
                 throw new JwtException(JwtFailureCause.InvalidToken);
 
+            string combined = splitToken[0] + '.' + splitToken[1];
+            string hash = _algorithm.Hash(combined);
+
+            if (hash != splitToken[2])
+                throw new JwtException(JwtFailureCause.InvalidSignature);
+
             try
             {
                 Header header = JsonSerializer.Deserialize<Header>(Base64.ToString(splitToken[0]));
