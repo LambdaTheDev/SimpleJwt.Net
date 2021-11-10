@@ -9,7 +9,8 @@ namespace SimpleJwt.Net.Algorithms
     {
         private const int DefaultInputBytesSize = 128;
         
-        private static readonly UTF8Encoding Encoding = new UTF8Encoding(false, true); // ENcoding
+        private static readonly UTF8Encoding Encoding = new UTF8Encoding(false, true); // Encoding
+        private readonly StringBuilder _hashBuilder = new StringBuilder(); // SB for hash
         private readonly HMACSHA256 _hmac; // HS256 instance
         private byte[] _inputBytes;
         
@@ -33,8 +34,13 @@ namespace SimpleJwt.Net.Algorithms
 
             int usedBytes = Encoding.GetBytes(input, 0, input.Length, _inputBytes, 0);
             byte[] computedBytes = _hmac.ComputeHash(_inputBytes, 0, usedBytes);
-            
-            return Encoding.GetString(computedBytes);
+
+            for (int i = 0; i < computedBytes.Length; i++)
+            {
+                _hashBuilder.Append(computedBytes[i].ToString("x2"));
+            }
+
+            return _hashBuilder.ToString();
         }
     }
 }
