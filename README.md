@@ -11,7 +11,8 @@ But it's planned to support all of claims defined in RFC.
 That library makes you very easy & performant creation of your own claims!
 
 # How to use it?
-- First, you need to create an IJwtAlgorithm object (right now, only supported algorithm is HS256 with a fixed secret key).
+- First, get NuGet package: https://www.nuget.org/packages/SimpleJwt.Net/ or download source code from here.
+- Next, you need to create an IJwtAlgorithm object (right now, only supported algorithm is HS256 with a fixed secret key).
 - Next, create instances of `JwtGenerator` and `JwtValidator`. In constructor, provide chosen IJwtAlgorithm instance and issuer name (to provide ISS claim checks automatically).
 - Next, create your JWT struct & implement IJwtBasicPayload interface, so it looks like that:
 ```cs
