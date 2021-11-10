@@ -7,6 +7,9 @@
         TokenInvalid, // Token is invalid, not in xxx.yyy.zzz template
         AlgorithmInvalid, // Validator's algorithm is different than token's one
         
+        // Generation failures
+        TooShortExpiryTime, // Token expires before it's generated
+        
         // Basic payload failure causes
         IssuerClaimFailed, // Token's and validators issuer does not match
         IssuedAtClaimFailed, // Attempted to validate a token that has been issued... in future?
