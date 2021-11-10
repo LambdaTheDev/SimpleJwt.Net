@@ -35,11 +35,12 @@ namespace SimpleJwt.Net.Algorithms
             int usedBytes = Encoding.GetBytes(input, new Span<byte>(_inputBytes));
             byte[] computedBytes = _hmac.ComputeHash(_inputBytes, 0, usedBytes);
 
+            _hashBuilder.Clear();
             for (int i = 0; i < computedBytes.Length; i++)
             {
-                _hashBuilder.Append(computedBytes[i].ToString("x2"));
+                _hashBuilder.Append(computedBytes[i].ToString("x2").Replace("-", ""));
             }
-
+            
             return _hashBuilder.ToString();
         }
 

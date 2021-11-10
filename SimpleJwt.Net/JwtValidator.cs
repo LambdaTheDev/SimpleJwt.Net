@@ -33,7 +33,7 @@ namespace SimpleJwt.Net
             // This time using for loop, due to not all algos used in JWT
             // have a fixed size
             int secondDotIndex = -1;
-            for (int i = token.Length; i >= _encodedHeader.Length; i--)
+            for (int i = token.Length - 1; i >= _encodedHeader.Length; i--)
             {
                 if (token[i] == '.')
                 {
@@ -42,14 +42,14 @@ namespace SimpleJwt.Net
                 }
             }
 
-            if (secondDotIndex == -1)
+            if (secondDotIndex == -1 || secondDotIndex == _encodedHeader.Length)
                 throw new JwtException(JwtFailureCause.TokenInvalid);
             
             // Split token into parts
             ReadOnlySpan<char> tokenSpan = token;
-            ReadOnlySpan<char> combined = tokenSpan.Slice(0, secondDotIndex - 1);
-            ReadOnlySpan<char> payload = tokenSpan.Slice(_encodedHeader.Length, secondDotIndex - 1);
-            ReadOnlySpan<char> hash = tokenSpan.Slice(secondDotIndex, token.Length);
+            ReadOnlySpan<char> combined = tokenSpan.Slice(0, secondDotIndex);
+            ReadOnlySpan<char> payload = tokenSpan.Slice(_encodedHeader.Length + 1, token.Length - _encodedHeader.Length - (token.Length - secondDotIndex) - 1);
+            ReadOnlySpan<char> hash = tokenSpan.Slice(secondDotIndex + 1, token.Length - combined.Length - 1);
 
             // Wrap validation into try-catch.
             // If anything wrong happens inside, then token is just invalid
@@ -57,8 +57,8 @@ namespace SimpleJwt.Net
             {
                 // Parse JWT into an T object
                 string payloadStr = payload.ToString();
-                T payloadObj = JsonSerializer.Deserialize<T>(payloadStr);
-            
+                T payloadObj = JsonSerializer.Deserialize<T>(Base64.ToString(payloadStr));
+
                 // Validate payload
                 if (DateTime.UtcNow >= payloadObj.Exp)
                     throw new JwtException(JwtFailureCause.ExpirationClaimFailed);
@@ -68,19 +68,28 @@ namespace SimpleJwt.Net
 
                 if (payloadObj.Iss != _issuerName)
                     throw new JwtException(JwtFailureCause.IssuerClaimFailed);
-            
+
                 // todo: Implement Advanced payload checks
 
                 // Generate hash for payload & compare them
+
+
                 ReadOnlySpan<char> comparisonHash = _algorithm.Hash(combined);
+                Console.WriteLine("COMBINED HASH: " + comparisonHash.ToString());
+                Console.WriteLine("HASH: " + hash.ToString());
                 if (!hash.Equals(comparisonHash, StringComparison.Ordinal))
                     throw new JwtException(JwtFailureCause.SignatureInvalid);
-                
+
                 // If everything is alright, return object
                 return payloadObj;
             }
-            catch (System.Exception)
+            catch (JwtException)
             {
+                throw;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
                 throw new JwtException(JwtFailureCause.TokenInvalid);
             }
         }

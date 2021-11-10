@@ -25,12 +25,33 @@ namespace SimpleJwt.Net
         }
         
         // Generates JWT for provided type
-        public string Generate<T>(DateTime exp, string sub) where T : struct, IJwtBasicPayload
+        public string Generate<T>(T payload, DateTime exp, string sub) where T : struct, IJwtBasicPayload
         {
             if (DateTime.UtcNow >= exp)
                 throw new JwtException(JwtFailureCause.TooShortExpiryTime);
+
+            payload.Iss = _issuerName;
+            payload.Sub = sub;
+            payload.Iat = DateTime.UtcNow;
+            payload.Exp = exp;
+
+            string serializedPayload = Base64.GetBase64(JsonSerializer.Serialize(payload));
+
+            _builder.Clear();
+            _builder.Append(_encodedHeader).Append('.').Append(serializedPayload);
             
-            T payload = new T();
+            string combinedHeaderPayload = _builder.ToString();
+            string hash = _algorithm.Hash(combinedHeaderPayload);
+            _builder.Append('.').Append(hash);
+
+            return _builder.ToString();
+        }
+
+        // Used on testing proposes, to test against expired tokens
+        internal string GenerateTest<T>(T payload, DateTime exp, string sub) where T : struct, IJwtBasicPayload
+        {
+            // if (DateTime.UtcNow >= exp)
+                // throw new JwtException(JwtFailureCause.TooShortExpiryTime);
 
             payload.Iss = _issuerName;
             payload.Sub = sub;
