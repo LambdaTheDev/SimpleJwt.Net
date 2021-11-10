@@ -10,13 +10,14 @@ namespace SimpleJwt.Net
     public sealed class JwtGenerator
     {
         private readonly StringBuilder _builder = new StringBuilder(1024);
-        
-        // todo: ALGORITHM
+
+        private readonly IJwtAlgorithm _algorithm; // Algorithm used by this generator
         private readonly string _issuerName; // Issuer name for generator
         private readonly string _encodedHeader; // One-time cached header, to avoid allocations
 
-        public JwtGenerator(string issuerName)
+        public JwtGenerator(IJwtAlgorithm algo, string issuerName)
         {
+            _algorithm = algo;
             _issuerName = issuerName;
             
             _encodedHeader = JsonSerializer.Serialize(new JwtHeader { Typ = "JWT", Alg = "todo" });
@@ -40,9 +41,9 @@ namespace SimpleJwt.Net
 
             _builder.Clear();
             _builder.Append(_encodedHeader).Append('.').Append(serializedPayload);
-            string combinedHeaderPayload = _builder.ToString();
             
-            string hash = ""; // todo: Fully define & implement IJwtAlgorithm
+            string combinedHeaderPayload = _builder.ToString();
+            string hash = _algorithm.Hash(combinedHeaderPayload);
             _builder.Append('.').Append(hash);
 
             return _builder.ToString();
