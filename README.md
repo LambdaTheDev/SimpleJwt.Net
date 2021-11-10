@@ -34,4 +34,4 @@ That library makes you very easy & performant creation of your own claims!
 - Enjoy!
 
 # Are you planning to extend it's functionalities?
-I plan to implement the IJwtAdvancedPayload system, with all claims defined in RFC. But, this is right a small project, just for my needs, it does not contain many functionalities. But if more people will start using that tool, I will spend more time on it and add new claims more quickly & more hashing algorithms.
+I plan to implement the IJwtAdvancedPayload system, with all claims defined in RFC. But, this is right a small project, just for my needs, so it does not contain many functionalities. But if more people will start using that tool, I will spend more time on it and add new claims more quickly & more hashing algorithms.
