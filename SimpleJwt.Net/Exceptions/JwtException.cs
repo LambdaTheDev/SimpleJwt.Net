@@ -1,4 +1,4 @@
-﻿namespace SimpleJwt.Net.Exception
+﻿namespace SimpleJwt.Net.Exceptions
 {
     // Exception thrown when JWT validation is invalid.
     public class JwtException : System.Exception

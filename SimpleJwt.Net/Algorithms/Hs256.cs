@@ -26,13 +26,13 @@ namespace SimpleJwt.Net.Algorithms
             _inputBytes = new byte[DefaultInputBytesSize];
         }
 
-        public string Hash(string input)
+        public string Hash(ReadOnlySpan<char> input)
         {
             int neededBytes = Encoding.GetByteCount(input);
             if(neededBytes > _inputBytes.Length)
                 Array.Resize(ref _inputBytes, (int) (neededBytes * 1.5f));
 
-            int usedBytes = Encoding.GetBytes(input, 0, input.Length, _inputBytes, 0);
+            int usedBytes = Encoding.GetBytes(input, new Span<byte>(_inputBytes));
             byte[] computedBytes = _hmac.ComputeHash(_inputBytes, 0, usedBytes);
 
             for (int i = 0; i < computedBytes.Length; i++)
@@ -42,5 +42,23 @@ namespace SimpleJwt.Net.Algorithms
 
             return _hashBuilder.ToString();
         }
+
+        // Backed up method
+        // public string Hash(string input)
+        // {
+        //     int neededBytes = Encoding.GetByteCount(input);
+        //     if(neededBytes > _inputBytes.Length)
+        //         Array.Resize(ref _inputBytes, (int) (neededBytes * 1.5f));
+        //
+        //     int usedBytes = Encoding.GetBytes(input, 0, input.Length, _inputBytes, 0);
+        //     byte[] computedBytes = _hmac.ComputeHash(_inputBytes, 0, usedBytes);
+        //
+        //     for (int i = 0; i < computedBytes.Length; i++)
+        //     {
+        //         _hashBuilder.Append(computedBytes[i].ToString("x2"));
+        //     }
+        //
+        //     return _hashBuilder.ToString();
+        // }
     }
 }

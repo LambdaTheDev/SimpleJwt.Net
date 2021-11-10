@@ -1,8 +1,8 @@
 ﻿namespace SimpleJwt.Net
 {
     // Advanced JWT payload, contains all checks defined in RFC
-    public interface IJwtAdvancedPayload : IJwtBasicPayload
+    internal interface IJwtAdvancedPayload : IJwtBasicPayload
     {
-        
+        // Right now internal before it's finished
     }
 }

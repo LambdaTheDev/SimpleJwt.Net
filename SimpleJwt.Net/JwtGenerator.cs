@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using Base64Url;
-using SimpleJwt.Net.Exception;
+using SimpleJwt.Net.Exceptions;
 
 namespace SimpleJwt.Net
 {
@@ -20,7 +20,7 @@ namespace SimpleJwt.Net
             _algorithm = algo;
             _issuerName = issuerName;
             
-            _encodedHeader = JsonSerializer.Serialize(new JwtHeader { Typ = "JWT", Alg = "todo" });
+            _encodedHeader = JsonSerializer.Serialize(new JwtHeader { Typ = "JWT", Alg = _algorithm.Code });
             _encodedHeader = Base64.GetBase64(_encodedHeader);
         }
         

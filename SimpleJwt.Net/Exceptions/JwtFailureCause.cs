@@ -1,4 +1,4 @@
-﻿namespace SimpleJwt.Net.Exception
+﻿namespace SimpleJwt.Net.Exceptions
 {
     public enum JwtFailureCause : byte
     {
@@ -6,6 +6,7 @@
         None = 0, // Default value
         TokenInvalid, // Token is invalid, not in xxx.yyy.zzz template
         AlgorithmInvalid, // Validator's algorithm is different than token's one
+        SignatureInvalid, // Token has invalid signature
         
         // Generation failures
         TooShortExpiryTime, // Token expires before it's generated
