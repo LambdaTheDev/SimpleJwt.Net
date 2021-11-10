@@ -2,13 +2,19 @@
 {
     public enum JwtFailureCause : byte
     {
-        None = 0,
-        InvalidToken, // Token is just invalid
-        InvalidAlgorithm, // Algorithm in incoming token isn't same as a validation token
-        InvalidType, // This is not a JWT token
-        InvalidSignature, // Signature isn't valid
-        InvalidIssuer, // Issuer is not the same
-        TooNew, // Token is too new (issued in future?)
-        Expired, // Token expired
+        // General failures
+        None = 0, // Default value
+        TokenInvalid, // Token is invalid, not in xxx.yyy.zzz template
+        AlgorithmInvalid, // Validator's algorithm is different than token's one
+        
+        // Basic payload failure causes
+        IssuerClaimFailed, // Token's and validators issuer does not match
+        IssuedAtClaimFailed, // Attempted to validate a token that has been issued... in future?
+        ExpirationClaimFailed, // Attempted to validate a token that is expired
+        
+        // Advanced payload failure causes
+        AudienceClainFailed, 
+        NotBeforeClaimFailed,
+        JwtIdClaimFailed,
     }
 }

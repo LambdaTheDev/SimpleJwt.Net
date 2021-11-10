@@ -3,7 +3,7 @@
 namespace SimpleJwt.Net
 {
     // Basic JWT clauses, suitable for most users
-    public interface IJwtPayload
+    public interface IJwtBasicPayload
     {
         public string Iss { get; set; } // Token issuer
         public string Sub { get; set; } // Token subject, for example user ID

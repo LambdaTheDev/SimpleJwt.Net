@@ -1,7 +1,5 @@
 ﻿using System;
 using NUnit.Framework;
-using SimpleJwt.Net.Algorithms;
-using SimpleJwt.Net.Exception;
 
 namespace SimpleJwt.Net.Tests
 {
@@ -10,7 +8,7 @@ namespace SimpleJwt.Net.Tests
     {
     }
 
-    internal struct SimpleJwt : IJwtPayload
+    internal struct SimpleJwtBasic : IJwtBasicPayload
     {
         public string Iss { get; set; }
         public string Sub { get; set; }
