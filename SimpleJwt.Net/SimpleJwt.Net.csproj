@@ -10,6 +10,7 @@
         <RepositoryUrl>https://github.com/LambdaTheDev/SimpleJwt.Net</RepositoryUrl>
         <PackageTags>jwt</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <RootNamespace>LambdaTheDev.SimpleJwt.Net</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
