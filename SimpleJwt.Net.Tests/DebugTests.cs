@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using NUnit.Framework;
 
 namespace SimpleJwt.Net.Tests
@@ -9,9 +10,7 @@ namespace SimpleJwt.Net.Tests
         [Test]
         public void Utf8CharTest()
         {
-            char ch = 'Ǿ';
-            
-            Console.WriteLine(ch);
+            Console.WriteLine(Encoding.UTF8.BodyName);
         }
     }
 }

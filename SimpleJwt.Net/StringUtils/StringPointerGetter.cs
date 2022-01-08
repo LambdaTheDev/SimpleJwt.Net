@@ -46,6 +46,9 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
 
 #endif
 #endif
+
+            value = default;
+            return false;
         }
     }
 }

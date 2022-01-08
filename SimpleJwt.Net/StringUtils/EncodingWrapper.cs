@@ -15,6 +15,8 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
         private char[] _separator = new char[2];
         private int _appendedBytes;
         private int _appendedChars;
+
+        public Encoding Encoding => _encoding; // Public encoding accessor
         
 
         public EncodingWrapper(Encoding encoding)
