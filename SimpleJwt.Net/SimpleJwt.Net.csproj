@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>netcoreapp5.0</TargetFramework>
         <PackageVersion>0.0.2</PackageVersion>
         <Title>SimpleJwt.Net</Title>
         <Authors>LambdaTheDev</Authors>
@@ -11,6 +11,10 @@
         <PackageTags>jwt</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <RootNamespace>LambdaTheDev.SimpleJwt.Net</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DefineConstants>TRACECOREAPP;SIMPLE_JWT_EXPERIMENTAL</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

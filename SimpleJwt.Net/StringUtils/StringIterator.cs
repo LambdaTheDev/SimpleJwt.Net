@@ -1,5 +1,3 @@
-using System;
-
 namespace LambdaTheDev.SimpleJwt.Net.StringUtils
 {
     // Minimal or zero alloc string iterator
