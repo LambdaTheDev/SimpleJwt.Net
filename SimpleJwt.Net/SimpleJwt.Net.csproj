@@ -18,8 +18,4 @@
       <DefineConstants>TRACECOREAPP;SIMPLE_JWT_EXPERIMENTAL</DefineConstants>
     </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Base64Url" Version="2.0.0" />
-    </ItemGroup>
-
 </Project>

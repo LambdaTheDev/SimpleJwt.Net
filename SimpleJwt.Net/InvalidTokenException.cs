@@ -16,6 +16,14 @@ namespace LambdaTheDev.SimpleJwt.Net
     // Helper enum for applications, to get a cause
     public enum JwtFailureCause
     {
-        None = 0,
+        None = 0, // No failure
+        
+        InvalidFormat, // Token is null, or not in JWT format
+        InvalidSignature, // Signature is invalid, token was prob. modified
+        IssuedInFuture, // Issued At claim says that token was issued in future
+        UsedTooEarly, // Not Before claim failed
+        Expired, // Expiration claim failed,
+        
+        Unknown, // Token failed for unknown reason, most likely library error
     }
 }
