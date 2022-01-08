@@ -1,12 +1,19 @@
-﻿using System;
+using System;
 
-namespace SimpleJwt.Net
+namespace LambdaTheDev.SimpleJwt.Net
 {
-    // QOL struct to wrap JWT header
+    // Header for JWT token
     [Serializable]
-    internal struct JwtHeader
+    public readonly struct JwtHeader
     {
-        public string Typ { get; set; } // Type of token
-        public string Alg { get; set; } // Picked algorithm
+        public string Typ { get; } // Token type, always JWT
+        public string Alg { get; } // Algorithm used by that JWT instance, set by generator
+
+        
+        public JwtHeader(string alg)
+        {
+            Typ = "JWT";
+            Alg = alg;
+        }
     }
 }
