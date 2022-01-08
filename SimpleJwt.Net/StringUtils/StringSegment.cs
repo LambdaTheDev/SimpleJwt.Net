@@ -40,6 +40,23 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
         public bool IsNullOrEmpty => Offset == -1 || Count == -1;
 
 
+        public bool Equals(string value)
+        {
+            if (value == null)
+                return false;
+
+            if (value.Length != Count)
+                return false;
+
+            for (int i = 0; i < Count; i++)
+            {
+                if (value[i] != OriginalString[Offset + i])
+                    return false;
+            }
+
+            return true;
+        }
+
         public override string ToString()
         {
             return OriginalString.Substring(Offset, Count);

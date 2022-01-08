@@ -19,6 +19,7 @@ namespace LambdaTheDev.SimpleJwt.Net
         None = 0, // No failure
         
         InvalidFormat, // Token is null, or not in JWT format
+        InvalidHeader, // Header is invalid 
         InvalidSignature, // Signature is invalid, token was prob. modified
         IssuedInFuture, // Issued At claim says that token was issued in future
         UsedTooEarly, // Not Before claim failed
