@@ -23,7 +23,8 @@ namespace LambdaTheDev.SimpleJwt.Net
         InvalidSignature, // Signature is invalid, token was prob. modified
         IssuedInFuture, // Issued At claim says that token was issued in future
         UsedTooEarly, // Not Before claim failed
-        Expired, // Expiration claim failed,
+        Expired, // Expiration claim failed
+        CustomClaimFailed, // Custom claim is invalid
         
         Unknown, // Token failed for unknown reason, most likely library error
     }

@@ -64,7 +64,7 @@ namespace SimpleJwt.Net.Tests.Performance
         public void WrappedJsonDeserialization()
         {
             StringSegment segment = new StringSegment(_jsonString, 0, _jsonString.Length);
-            ExampleData data = segment.DeserializeJson<ExampleData>(_wrapper);
+            //ExampleData data = segment.DeserializeJson<ExampleData>(_wrapper);
         }
 
         public struct ExampleData
