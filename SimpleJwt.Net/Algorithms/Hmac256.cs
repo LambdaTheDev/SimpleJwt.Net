@@ -11,10 +11,12 @@ namespace LambdaTheDev.SimpleJwt.Net.Algorithms
         public string Name => "HS256";
 
 
-        public Hmac256(byte[] secret)
+        public Hmac256(byte[] secret = null)
         {
             if (secret != null)
                 Hmac.Key = secret;
+            else
+                CryptoSafeRng.FillBytes(Hmac.Key);
         }
 
         // Just computes HMAC256 hash.

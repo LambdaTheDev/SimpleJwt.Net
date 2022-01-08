@@ -71,9 +71,9 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
                 separatorBytes = _encoding.GetByteCount(_separator, 0, separatorLength);
 
             // Get bytes count & validate byte buffer size
-            int neededBytes = _encoding.GetByteCount(_reusableCharBuffer, 0, _appendedBytes); // Note: in case of failures, try _appBytes - 1
+            int neededBytes = _encoding.GetByteCount(_reusableCharBuffer, 0, _appendedChars); // Note: in case of failures, try _appBytes - 1
             EnsureByteBufferCapacity(neededBytes + separatorBytes);
-
+            
             // Append bytes with separator using unsafe code
             unsafe
             {
@@ -105,7 +105,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
         // Returns string from byte array 
         public string GetString(byte[] value) => GetString(new ArraySegment<byte>(value));
 
-        // Resets & clears memory of reusable buffers
+        // Resets wrapper positions
         public void Clear()
         {
             _appendedBytes = 0;
@@ -138,9 +138,9 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
         // Ensures that byte buffer has enough space
         private void EnsureByteBufferCapacity(int requiredSize)
         {
-            if (_reusableByteBuffer.Length < requiredSize)
+            if (_reusableByteBuffer.Length < requiredSize + _appendedBytes)
             {
-                byte[] newBuffer = new byte[GetNewBufferSize(requiredSize, _reusableByteBuffer.Length)];
+                byte[] newBuffer = new byte[GetNewBufferSize(requiredSize + _appendedBytes, _reusableByteBuffer.Length)];
                 unsafe
                 {
                     fixed(byte* sourcePtr = _reusableByteBuffer)

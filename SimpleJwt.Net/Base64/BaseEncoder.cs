@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 using System;
+using LambdaTheDev.SimpleJwt.Net.StringUtils;
 
 namespace Exyll
 {
@@ -51,7 +52,7 @@ namespace Exyll
 			PaddingEnabled = paddingEnabled;
 			CharacterSet = characterSet;
 
-			Map = new byte[characterSet.Length];
+			Map = new byte[128];
 			for (byte i = 0; i < characterSet.Length; i++)
 				Map[(byte)characterSet[i]] = i;
 		}
@@ -125,9 +126,11 @@ namespace Exyll
 				_reusableS = new char[(int) (1.5f * required)];
 		}
 
-		public ArraySegment<byte> FromBase(string data)
+		public ArraySegment<byte> FromBase(string data) => FromBase(new StringSegment(data));
+
+		public ArraySegment<byte> FromBase(StringSegment data)
 		{
-			int length = data == null ? 0 : data.Length;
+			int length = data.IsNull ? 0 : data.Count;
 
 			if (length == 0)
 				return EmptyArray;
@@ -148,7 +151,7 @@ namespace Exyll
 						padding = 2;
 					else if (length > 1 && p2[length - 1] == PaddingChar)
 						padding = 1;
-					
+
 					EnsureDataBufferCapacity(bytes - padding);
 
 					byte temp1, temp2;
@@ -163,42 +166,44 @@ namespace Exyll
 							temp1 = Map[*p2++];
 							temp2 = Map[*p2++];
 
-							*dp++ = (byte)((temp1 << 2) | ((temp2 & 0x30) >> 4));
+							*dp++ = (byte) ((temp1 << 2) | ((temp2 & 0x30) >> 4));
 							temp1 = Map[*p2++];
-							*dp++ = (byte)(((temp1 & 0x3C) >> 2) | ((temp2 & 0x0F) << 4));
+							*dp++ = (byte) (((temp1 & 0x3C) >> 2) | ((temp2 & 0x0F) << 4));
 							temp2 = Map[*p2++];
-							*dp++ = (byte)(((temp1 & 0x03) << 6) | temp2);
+							*dp++ = (byte) (((temp1 & 0x03) << 6) | temp2);
 						}
 
 						temp1 = Map[*p2++];
 						temp2 = Map[*p2++];
 
-						*dp++ = (byte)((temp1 << 2) | ((temp2 & 0x30) >> 4));
+						*dp++ = (byte) ((temp1 << 2) | ((temp2 & 0x30) >> 4));
 
 						temp1 = Map[*p2++];
 
 						if (padding != 2)
-							*dp++ = (byte)(((temp1 & 0x3C) >> 2) | ((temp2 & 0x0F) << 4));
+							*dp++ = (byte) (((temp1 & 0x3C) >> 2) | ((temp2 & 0x0F) << 4));
 
 
 						temp2 = Map[*p2++];
 						if (padding == 0)
-							*dp++ = (byte)(((temp1 & 0x03) << 6) | temp2);
+							*dp++ = (byte) (((temp1 & 0x03) << 6) | temp2);
 
 
 					}
+
 					return new ArraySegment<byte>(_reusableData, 0, bytes - padding);
 				}
 			}
 		}
-
-		private void PutStringInReusableBuffer(string value)
+		
+		
+		private void PutStringInReusableBuffer(StringSegment value)
 		{
-			if (value.Length < _reusableString.Length) 
-				_reusableString = new char[(int) (1.5f * value.Length)];
-
-			for (int i = 0; i < value.Length; i++)
-				_reusableString[i] = value[i];
+			if (value.Count > _reusableString.Length) 
+				_reusableString = new char[(int) (1.5f * value.Count)];
+			
+			for (int i = 0; i < value.Count; i++)
+				_reusableString[i] = value.OriginalString[value.Offset + i];
 		}
 
 		private void EnsureDataBufferCapacity(int required)

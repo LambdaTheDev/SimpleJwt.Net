@@ -17,7 +17,7 @@ namespace SimpleJwt.Net.Tests.Performance
         private ExampleData _data;
         private EncodingWrapper _wrapper = new EncodingWrapper(new UTF8Encoding());
 
-        [Test]
+        // [Test] to not get stuck for some amount of time
         public void Test()
         {
             var summary = BenchmarkRunner.Run<JsonSerializationTests>(new DebugBuildConfig());

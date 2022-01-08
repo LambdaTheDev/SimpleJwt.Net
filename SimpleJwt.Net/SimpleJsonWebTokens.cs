@@ -9,7 +9,7 @@ using LambdaTheDev.SimpleJwt.Net.StringUtils;
 namespace LambdaTheDev.SimpleJwt.Net
 {
     // Most important class in this library. Allows to generate & validate tokens
-    public sealed class SimpleJwt
+    public sealed class SimpleJsonWebTokens
     {
         private readonly Base64Encoder _base64 = Base64Encoder.UrlEncoding.CopyEncoder(); // Base64 encoder
         private readonly EncodingWrapper _utf8 = new EncodingWrapper(Encoding.UTF8); // todo: Make sure that I don't have to make instance of encoding
@@ -17,9 +17,10 @@ namespace LambdaTheDev.SimpleJwt.Net
         private readonly string _encodedHeader; // JWT header, created once
         
         public IJwtAlgorithm Algorithm => _algorithm; // Algorithm is exposed publicly, so some secret keys etc can be changed
-
+        internal string EncodedHeader => _encodedHeader; // Used for testing proposes
         
-        public SimpleJwt(IJwtAlgorithm algorithm)
+        
+        public SimpleJsonWebTokens(IJwtAlgorithm algorithm)
         {
             _algorithm = algorithm;
             
@@ -42,6 +43,7 @@ namespace LambdaTheDev.SimpleJwt.Net
             string base64Payload = _base64.ToBase(_utf8.ToReusableBuffer());
          
             // Generate signature
+            _utf8.Clear();
             _utf8.Append(new StringSegment(_encodedHeader), '.');
             _utf8.Append(new StringSegment(base64Payload), '.');
             
@@ -83,7 +85,7 @@ namespace LambdaTheDev.SimpleJwt.Net
                 // If 3 iterations weren't made, then token is too short
                 if(iterations != 3)
                     throw new InvalidTokenException(JwtFailureCause.InvalidFormat);
-                
+
                 // Validate segments
                 if(!header.Equals(_encodedHeader))
                     throw new InvalidTokenException(JwtFailureCause.InvalidHeader);
@@ -100,7 +102,11 @@ namespace LambdaTheDev.SimpleJwt.Net
                     throw new InvalidTokenException(JwtFailureCause.InvalidSignature);
                 
                 // Now... only decode payload & validate basic claims
-                T deserializedPayload = payload.DeserializeJson<T>(_utf8);
+                ArraySegment<byte> base64Decoded = _base64.FromBase(payload);
+                _utf8.Clear();
+                string rawPayload = _utf8.GetString(base64Decoded);
+
+                T deserializedPayload = JsonSerializer.Deserialize<T>(rawPayload);
                 EnsureClaimsAreValid(deserializedPayload);
                 
                 // And return payload for further validation
