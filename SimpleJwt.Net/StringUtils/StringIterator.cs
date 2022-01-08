@@ -6,7 +6,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
         private readonly string _target;
         private readonly char _separator;
 
-        private StringIteratorEntry _currentEntry;
+        private StringSegment _currentEntry;
         private int _position;
         private bool _ended;
 
@@ -16,12 +16,12 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
             _target = target;
             _separator = separator;
 
-            _currentEntry = StringIteratorEntry.Null;
+            _currentEntry = StringSegment.Null;
             _position = 0;
             _ended = false;
         }
 
-        public StringIteratorEntry Current()
+        public StringSegment Current()
         {
             return _currentEntry;
         }
@@ -35,14 +35,14 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
             // Validation
             if (_target == null)
             {
-                _currentEntry = StringIteratorEntry.Null;
+                _currentEntry = StringSegment.Null;
                 _ended = true;
                 return true;
             }
 
             if (_target == string.Empty)
             {
-                _currentEntry = StringIteratorEntry.Empty;
+                _currentEntry = StringSegment.Empty;
                 _ended = true;
                 return true;
             }
@@ -52,7 +52,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
             {
                 if (_target[i] == _separator)
                 {
-                    _currentEntry = new StringIteratorEntry(_target, _position, i - _position);
+                    _currentEntry = new StringSegment(_target, _position, i - _position);
                     _position = i + 1;
                     
                     return true;
@@ -60,7 +60,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
             }
 
             // End of string -> wrap everything that it left
-            _currentEntry = new StringIteratorEntry(_target, _position, _target.Length - _position);
+            _currentEntry = new StringSegment(_target, _position, _target.Length - _position);
             _ended = true;
             
             return true;
@@ -69,25 +69,36 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
 
 
     // Entry for string iterator
-    public readonly struct StringIteratorEntry
+    public readonly struct StringSegment
     {
-        public static readonly StringIteratorEntry Null = new StringIteratorEntry(null, -1, 0);
-        public static readonly StringIteratorEntry Empty = new StringIteratorEntry(string.Empty, 0, -1);
+        public static readonly StringSegment Null = new StringSegment(null, -1, 0);
+        public static readonly StringSegment Empty = new StringSegment(string.Empty, 0, -1);
         
-        public readonly string OriginalString;
-        public readonly int Offset;
-        public readonly int Count;
+        public readonly string OriginalString; // Original string
+        public readonly int Offset; // Start character index
+        public readonly int Count; // Count of characters from index
 
 
-        public StringIteratorEntry(string originalString, int offset, int count)
+        public StringSegment(string originalString, int offset, int count)
         {
             OriginalString = originalString;
             Offset = offset;
             Count = count;
+
+            if (originalString == null)
+                Offset = -1;
+            else if (originalString == string.Empty)
+                Count = -1;
         }
 
         public bool IsNull => Offset == -1;
         public bool IsEmpty => Count == -1;
         public bool IsNullOrEmpty => Offset == -1 || Count == -1;
+
+
+        public override string ToString()
+        {
+            return OriginalString.Substring(Offset, Count);
+        }
     }
 }

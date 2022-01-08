@@ -11,6 +11,7 @@
         <PackageTags>jwt</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <RootNamespace>LambdaTheDev.SimpleJwt.Net</RootNamespace>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

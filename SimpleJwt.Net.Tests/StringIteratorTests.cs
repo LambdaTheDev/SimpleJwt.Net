@@ -23,7 +23,7 @@ namespace SimpleJwt.Net.Tests
             "..",
             "..."
         };
-        
+
         [Test]
         public void IteratorTest()
         {
@@ -72,7 +72,7 @@ namespace SimpleJwt.Net.Tests
             Assert.True(success);
         }
 
-        private string BuildString(StringIteratorEntry entry)
+        private string BuildString(StringSegment entry)
         {
             if (entry.IsNull)
                 return null;
