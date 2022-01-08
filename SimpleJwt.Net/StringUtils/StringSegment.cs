@@ -23,6 +23,18 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
                 Count = -1;
         }
 
+        public StringSegment(string originalString)
+        {
+            OriginalString = originalString;
+            Offset = 0;
+            Count = OriginalString.Length;
+            
+            if (originalString == null)
+                Offset = -1;
+            else if (originalString == string.Empty)
+                Count = -1;
+        }
+
         public bool IsNull => Offset == -1;
         public bool IsEmpty => Count == -1;
         public bool IsNullOrEmpty => Offset == -1 || Count == -1;
