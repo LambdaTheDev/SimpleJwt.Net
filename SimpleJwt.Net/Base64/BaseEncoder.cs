@@ -34,13 +34,12 @@ namespace Exyll
 	/// MINE MODIFICATIONS: I reduced allocations by using reusable buffers!
 	public class BaseEncoder
 	{
-		const char PaddingChar = '=';
-		
-		public static readonly byte[] EmptyArray = new byte[0];
-		readonly byte[] Map;
+		private const char PaddingChar = '=';
+		private static readonly byte[] EmptyArray = new byte[0];
 
 		public readonly char[] CharacterSet;
 		public readonly bool PaddingEnabled;
+		private readonly byte[] Map;
 
 		private char[] _reusableS = new char[32];
 		private char[] _reusableString = new char[32];
