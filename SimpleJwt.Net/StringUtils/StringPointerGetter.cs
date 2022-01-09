@@ -27,6 +27,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
         // Returns true & char on success, false & empty char on failure
         public static bool TryGetFor(string input, out char value)
         {
+#pragma warning disable 162
 #if SIMPLE_JWT_EXPERIMENTAL
 #if NET
             // .NET simplified it. Mono - hasn't
@@ -49,6 +50,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
 
             value = default;
             return false;
+#pragma warning restore
         }
     }
 }

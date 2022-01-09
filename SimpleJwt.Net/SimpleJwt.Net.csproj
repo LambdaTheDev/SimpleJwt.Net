@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp5.0</TargetFramework>
-        <PackageVersion>1.0.0</PackageVersion>
+        <PackageVersion>1.0.1</PackageVersion>
         <Title>SimpleJwt.Net</Title>
         <Authors>LambdaTheDev</Authors>
         <PackageProjectUrl>https://github.com/LambdaTheDev/SimpleJwt.Net</PackageProjectUrl>
@@ -14,11 +13,16 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Description>Library that allows you to issue &amp; validate Json Web Tokens with custom claims easily.</Description>
         <RepositoryType>git</RepositoryType>
-        <AssemblyVersion>1.0.0</AssemblyVersion>
+        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <TargetFrameworks>net48;netcoreapp5.0</TargetFrameworks>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <DefineConstants>TRACECOREAPP;SIMPLE_JWT_EXPERIMENTAL</DefineConstants>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    </ItemGroup>
 
 </Project>

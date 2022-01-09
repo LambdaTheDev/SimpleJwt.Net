@@ -133,7 +133,7 @@ namespace Exyll
 			int length = data.IsNull ? 0 : data.Count;
 
 			if (length == 0)
-				return EmptyArray;
+				return new ArraySegment<byte>(EmptyArray);
 
 			unsafe
 			{

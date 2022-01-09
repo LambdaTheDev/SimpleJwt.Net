@@ -48,10 +48,10 @@ namespace LambdaTheDev.SimpleJwt.Net
             _utf8.Append(new StringSegment(base64Payload), '.');
             
             byte[] computedHash = _algorithm.Hash(_utf8.ToReusableBuffer());
-            string signature = _base64.ToBase(computedHash);
+            string signature = _base64.ToBase(new ArraySegment<byte>(computedHash));
 
             // Return generated token
-            return string.Join('.', _encodedHeader, base64Payload, signature);
+            return string.Join(".", _encodedHeader, base64Payload, signature);
         }
 
         // Validates JWT token. Throws InvalidTokenException, if it's invalid
@@ -96,7 +96,7 @@ namespace LambdaTheDev.SimpleJwt.Net
                 _utf8.Append(payload, '.');
 
                 byte[] computedHash = _algorithm.Hash(_utf8.ToReusableBuffer());
-                string signatureBase64 = _base64.ToBase(computedHash);
+                string signatureBase64 = _base64.ToBase(new ArraySegment<byte>(computedHash));
                 
                 if(!signature.Equals(signatureBase64))
                     throw new InvalidTokenException(JwtFailureCause.InvalidSignature);

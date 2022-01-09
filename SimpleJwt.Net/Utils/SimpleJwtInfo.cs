@@ -8,10 +8,12 @@ namespace LambdaTheDev.SimpleJwt.Net.Utils
         {
             get
             {
+#pragma warning disable 162
 #if SIMPLE_JWT_EXPERIMENTAL
                 return true;
 #endif
                 return false;
+#pragma warning restore
             }
         }
     }

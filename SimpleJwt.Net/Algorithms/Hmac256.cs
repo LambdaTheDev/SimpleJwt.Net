@@ -16,7 +16,7 @@ namespace LambdaTheDev.SimpleJwt.Net.Algorithms
             if (secret != null)
                 Hmac.Key = secret;
             else
-                CryptoSafeRng.FillBytes(Hmac.Key);
+                CryptoSafeRng.FillBytes(new ArraySegment<byte>(Hmac.Key));
         }
 
         // Just computes HMAC256 hash.

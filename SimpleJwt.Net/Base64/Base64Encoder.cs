@@ -37,7 +37,6 @@ namespace Exyll
 
         public readonly char PlusChar;
         public readonly char SlashChar;
-        public readonly bool PaddingEnabled;
 
         public static readonly Base64Encoder Default = new Base64Encoder('+', '/', true);
         public static readonly Base64Encoder UrlEncoding = new Base64Encoder('-', '_', false);
@@ -53,7 +52,6 @@ namespace Exyll
         {
             PlusChar = plusChar;
             SlashChar = slashChar;
-            PaddingEnabled = paddingEnabled;
         }
 
         // Due to now, this encoder is not thread-safe, I need to make copies

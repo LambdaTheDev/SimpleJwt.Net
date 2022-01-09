@@ -23,6 +23,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
         // Returns allocated string instance, or null if feature is disabled
         public static string Allocate(int size)
         {
+#pragma warning disable 162
 #if SIMPLE_JWT_EXPERIMENTAL
 
             Arguments[0] = size;
@@ -32,6 +33,7 @@ namespace LambdaTheDev.SimpleJwt.Net.StringUtils
 #endif
 
             return null;
+#pragma warning restore
         }
     }
 }
