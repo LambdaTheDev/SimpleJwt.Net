@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <PackageVersion>1.0.1</PackageVersion>
+        <PackageVersion>1.1.0</PackageVersion>
         <Title>SimpleJwt.Net</Title>
         <Authors>LambdaTheDev</Authors>
         <PackageProjectUrl>https://github.com/LambdaTheDev/SimpleJwt.Net</PackageProjectUrl>
@@ -22,7 +22,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="SharpStringUtils" Version="1.2.5" />
       <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="SharpStringUtils, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" Condition="'$(TargetFramework)' == 'net48'">
+        <HintPath>..\..\SharpStringUtils\SharpStringUtils\bin\Release\netcoreapp5.0\SharpStringUtils.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

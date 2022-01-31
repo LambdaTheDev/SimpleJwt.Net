@@ -16,8 +16,10 @@ namespace SimpleJwt.Net.Tests
         {
             ExampleToken tokenObj = new ExampleToken
             {
-                Iat = DateTimeOffset.UtcNow.AddDays(-1).DateTime,
+                Sub = "TestToken",
+                Iat = DateTime.UtcNow,
                 Exp = DateTimeOffset.UtcNow.AddDays(1).DateTime,
+                Aud = "TestAudience",
             };
 
             string token = _jwt.Generate(tokenObj);
@@ -25,8 +27,10 @@ namespace SimpleJwt.Net.Tests
         }
         
         
-        private class ExampleToken : IIssuedAtClaim, IExpirationClaim
+        private class ExampleToken : IIssuedAtClaim, IExpirationClaim, ISubjectClaim<string>, IAudienceClaim<string>
         {
+            public string Sub { get; set; }
+            public string Aud { get; set; }
             public DateTime Iat { get; set; }
             public DateTime Exp { get; set; }
         }

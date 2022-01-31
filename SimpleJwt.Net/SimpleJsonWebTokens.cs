@@ -1,121 +1,162 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Exyll;
+using LambdaTheDev.SharpStringUtils;
+using LambdaTheDev.SharpStringUtils.Encodings;
+using LambdaTheDev.SharpStringUtils.Encodings.Base;
+using LambdaTheDev.SharpStringUtils.Extensions;
+using LambdaTheDev.SharpStringUtils.Iterator;
 using LambdaTheDev.SimpleJwt.Net.Algorithms;
 using LambdaTheDev.SimpleJwt.Net.Claims;
-using LambdaTheDev.SimpleJwt.Net.StringUtils;
 
 namespace LambdaTheDev.SimpleJwt.Net
 {
     // Most important class in this library. Allows to generate & validate tokens
     public sealed class SimpleJsonWebTokens
     {
-        private readonly Base64Encoder _base64 = Base64Encoder.UrlEncoding.CopyEncoder(); // Base64 encoder
-        private readonly EncodingWrapper _utf8 = new EncodingWrapper(Encoding.UTF8); // todo: Make sure that I don't have to make instance of encoding
-        private readonly IJwtAlgorithm _algorithm; // Algorithm used by this JWT generator
-        private readonly string _encodedHeader; // JWT header, created once
+        // Raw UTF8 encoding instance
+        private readonly UTF8Encoding _rawEncoding = new UTF8Encoding(false, false);
         
-        public IJwtAlgorithm Algorithm => _algorithm; // Algorithm is exposed publicly, so some secret keys etc can be changed
-        internal string EncodedHeader => _encodedHeader; // Used for testing proposes
+        // Base64 encoder/decoder that does not allocate much
+        private readonly Base64EncoderNonAlloc _base64 = new Base64EncoderNonAlloc('-', '_', false);
+        
+        // StringBuilder, but bitwise & for UTF8 encoding
+        private readonly EncodingBuilderNonAlloc _utf8Builder;
+        
+        // Encoding instance that does not allocate
+        private readonly EncodingNonAlloc _utf8Encoding;
+
+        // Algorithm instance used by this SJWT instance
+        public IJwtAlgorithm Algorithm { get; }
+        
+        // Encoded header, internal for testing proposes
+        internal string EncodedHeader { get; }
         
         
         public SimpleJsonWebTokens(IJwtAlgorithm algorithm)
         {
-            _algorithm = algorithm;
+            // Set algorithm & encoding wrappers
+            // Note: I use single UTF-8 instance, due to it's not used concurrently in single SJWT instance
+            Algorithm = algorithm;
+            _utf8Builder = new EncodingBuilderNonAlloc(_rawEncoding);
+            _utf8Encoding = new EncodingNonAlloc(_rawEncoding);
+
+            // Prepare header & serialize into JSON
+            JwtHeader header = new JwtHeader(algorithm.Name);
+            string jsonHeader = JsonSerializer.Serialize(header);
             
-            // Serialize & cache header once
-            JwtHeader header = new JwtHeader(_algorithm.Name);
-            string headerJson = JsonSerializer.Serialize(header);
-            StringSegment headerJsonSegment = new StringSegment(headerJson, 0, headerJson.Length);
-            _utf8.Append(headerJsonSegment);
-            _encodedHeader = _base64.ToBase(_utf8.ToReusableBuffer());
-            _utf8.Clear();
+            // Get bytes & create base64 string
+            _utf8Builder.Clear();
+            _utf8Builder.Append(new StringSegment(jsonHeader));
+            ArraySegment<char> base64Chars = _base64.ToBaseNonAlloc(_utf8Builder.GetBytesNonAlloc());
+
+            // Set base64 string with dot at the end as header
+            EncodedHeader = new string(base64Chars.Array, base64Chars.Offset, base64Chars.Count);
         }
         
         // Generates a token where T type is a payload.
         public string Generate<T>(T payload)
         {
-            // Generate payload
-            string jsonPayload = JsonSerializer.Serialize(payload);
-            _utf8.Clear();
-            _utf8.Append(new StringSegment(jsonPayload));
-            string base64Payload = _base64.ToBase(_utf8.ToReusableBuffer());
-         
-            // Generate signature
-            _utf8.Clear();
-            _utf8.Append(new StringSegment(_encodedHeader), '.');
-            _utf8.Append(new StringSegment(base64Payload), '.');
+            string payloadJson = JsonSerializer.Serialize(payload);
+            ArraySegment<byte> payloadJsonUtf8 = _utf8Encoding.GetBytesNonAlloc(payloadJson);
+            ArraySegment<char> payloadBase64 = _base64.ToBaseNonAlloc(payloadJsonUtf8);
             
-            byte[] computedHash = _algorithm.Hash(_utf8.ToReusableBuffer());
-            string signature = _base64.ToBase(new ArraySegment<byte>(computedHash));
-
-            // Return generated token
-            return string.Join(".", _encodedHeader, base64Payload, signature);
+            // Reset builder & append header & Base
+            _utf8Builder.Clear();
+            _utf8Builder.Append(EncodedHeader, ".");
+            _utf8Builder.Append(payloadBase64, ".");
+            
+            // Create signature & append Base64
+            byte[] signature = Algorithm.Hash(_utf8Builder.GetBytesNonAlloc());
+            ArraySegment<char> base64Signature = _base64.ToBaseNonAlloc(signature);
+            _utf8Builder.Append(base64Signature, ".");
+            
+            // Generate token from builder
+            return _utf8Builder.GetString();
         }
 
+        // QOL wrapper for string token validation
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T Validate<T>(string token) => Validate<T>(new StringSegment(token));
+
         // Validates JWT token. Throws InvalidTokenException, if it's invalid
-        public T Validate<T>(string token)
+        public T Validate<T>(StringSegment tokenSegment)
         {
             try
             {
+                // todo: Reduce allocation by allowing StringSegment in StringSplitter + rework string splitter
+                string token = tokenSegment.ToString();
+
+                // Prepare default values
                 StringSegment header = default, payload = default, signature = default;
-                
-                // First obtain all parts of token & ensure that it's valid
-                StringIterator iterator = new StringIterator(token, '.');
+
                 int iterations = 0;
-                while (iterator.MoveNext())
+                foreach (StringSegment segment in new StringSplitterNonAlloc(token, '.'))
                 {
+                    // Assign each part to cached segment above
+                    switch (iterations)
+                    {
+                        case 0:
+                            header = segment;
+                            break;
+
+                        case 1:
+                            payload = segment;
+                            break;
+
+                        case 2:
+                            signature = segment;
+                            break;
+
+                        // If more then 2 (3), throw InvalidToken
+                        default:
+                            throw new InvalidTokenException(JwtFailureCause.InvalidFormat);
+                    }
+
                     iterations++;
-                    
-                    if (iterations == 1)
-                        header = iterator.Current();
-                    
-                    else if (iterations == 2)
-                        payload = iterator.Current();
-                    
-                    else if (iterations == 3)
-                        signature = iterator.Current();
-                    
-                    // If more than 3 iterations are made, then token is too long
-                    else
-                        throw new InvalidTokenException(JwtFailureCause.InvalidFormat);
                 }
-                
-                // If 3 iterations weren't made, then token is too short
-                if(iterations != 3)
+
+                // Assert that there is not too much/less segments
+                if (iterations != 3)
                     throw new InvalidTokenException(JwtFailureCause.InvalidFormat);
 
-                // Validate segments
-                if(!header.Equals(_encodedHeader))
+                // Validate header (easiest - just ensure that it matches EncodedHeader
+                if (!header.Equals(EncodedHeader))
                     throw new InvalidTokenException(JwtFailureCause.InvalidHeader);
-                
-                // Validate signature
-                _utf8.Clear();
-                _utf8.Append(header, '.');
-                _utf8.Append(payload, '.');
 
-                byte[] computedHash = _algorithm.Hash(_utf8.ToReusableBuffer());
-                string signatureBase64 = _base64.ToBase(new ArraySegment<byte>(computedHash));
-                
-                if(!signature.Equals(signatureBase64))
+                // Prepare signature
+                _utf8Builder.Clear();
+                _utf8Builder.Append(header, ".");
+                _utf8Builder.Append(payload, ".");
+
+                // Compute & validate signature
+                byte[] computedHash = Algorithm.Hash(_utf8Builder.GetBytesNonAlloc());
+                ArraySegment<char> signatureBase64Chars = _base64.ToBaseNonAlloc(computedHash);
+
+                // Validate signature. TODO: Add ArrSegment<char> support to StringSegment
+                if(signatureBase64Chars.Count != signature.Count)
                     throw new InvalidTokenException(JwtFailureCause.InvalidSignature);
                 
-                // Now... only decode payload & validate basic claims
-                ArraySegment<byte> base64Decoded = _base64.FromBase(payload);
-                _utf8.Clear();
-                string rawPayload = _utf8.GetString(base64Decoded);
+                // Iterate through chars to ensure strings match.
+                for(int i = 0; i < signature.Count; i++)
+                    if(signatureBase64Chars.Array[signatureBase64Chars.Offset + i] != signature.OriginalString[signature.Offset + i])
+                        throw new InvalidTokenException(JwtFailureCause.InvalidSignature);
 
-                T deserializedPayload = JsonSerializer.Deserialize<T>(rawPayload);
+                // Decode payload & deserialize it from JSON
+                ArraySegment<byte> payloadJsonBytes = _base64.FromBaseNonAlloc(payload);
+                string payloadJson = _utf8Encoding.GetString(payloadJsonBytes);
+
+                // Pass payload to claims validator 
+                T deserializedPayload = JsonSerializer.Deserialize<T>(payloadJson);
                 EnsureClaimsAreValid(deserializedPayload);
-                
-                // And return payload for further validation
+
+                // If everything is alright - return payload
                 return deserializedPayload;
             }
             catch (InvalidTokenException) { throw; }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e);
                 throw new InvalidTokenException(JwtFailureCause.Unknown);
             }
         }
@@ -123,18 +164,21 @@ namespace LambdaTheDev.SimpleJwt.Net
         // Gets values from Claims interfaces & validates them
         private void EnsureClaimsAreValid<T>(T payload)
         {
+            // If payload has expiration check, compare it against now (UTC)
             if (payload is IExpirationClaim exp)
             {
                 if(exp.Exp <= DateTime.UtcNow)
                     throw new InvalidTokenException(JwtFailureCause.Expired);
             }
 
+            // If payload has issued at check, ensure it's not issued in future somehow
             if (payload is IIssuedAtClaim iat)
             {
                 if(iat.Iat > DateTime.UtcNow)
                     throw new InvalidTokenException(JwtFailureCause.IssuedInFuture);
             }
 
+            // If payload has not before check, ensure that if token is used in a proper time
             if (payload is INotBeforeClaim nbf)
             {
                 if(nbf.Nbf > DateTime.UtcNow)
