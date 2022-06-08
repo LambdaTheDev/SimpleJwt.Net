@@ -14,7 +14,7 @@
         <Description>Library that allows you to issue &amp; validate Json Web Tokens with custom claims easily.</Description>
         <RepositoryType>git</RepositoryType>
         <AssemblyVersion>1.0.1</AssemblyVersion>
-        <TargetFrameworks>net48;netcoreapp5.0</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -22,6 +22,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Base64EncoderNonAlloc" Version="1.0.0" />
       <PackageReference Include="System.Text.Json" Version="6.0.1" />
       <PackageReference Include="ZString" Version="2.4.4" />
     </ItemGroup>
