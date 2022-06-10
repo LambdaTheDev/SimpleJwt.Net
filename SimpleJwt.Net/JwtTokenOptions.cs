@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using Cysharp.Text;
 using LambdaTheDev.Exyll.Base64EncoderNonAlloc;
 using LambdaTheDev.SimpleJwt.Net.Algorithms;
-using LambdaTheDev.SimpleJwt.Net.AutoValidators;
 using LambdaTheDev.SimpleJwt.Net.Extensions;
 using LambdaTheDev.SimpleJwt.Net.Utils;
 
@@ -26,21 +24,15 @@ namespace LambdaTheDev.SimpleJwt.Net
             get { lock (_encoder) { return _encoder; } }
         }
 
-        // Attached AutoValidators
-        public readonly List<JwtAutoValidator> AutoValidators = new List<JwtAutoValidator>();
-
         // Pre-computed header, to reduce allocations while generating tokens
         internal string PreComputedHeader { get; }
         
         
-        public JwtTokenOptions(IJwtTokenAlgorithm algorithm, JsonSerializerOptions serializerOptions, bool includeDatesAutoValidator = true)
+        public JwtTokenOptions(IJwtTokenAlgorithm algorithm, JsonSerializerOptions serializerOptions)
         {
             Algorithm = algorithm;
             SerializerOptions = serializerOptions;
             PreComputedHeader = ComputeHeader();
-            
-            if(includeDatesAutoValidator)
-                AutoValidators.Add(new DatesAutoValidator());
         }
 
         // Expansive method used to pre-compute headers
@@ -51,16 +43,17 @@ namespace LambdaTheDev.SimpleJwt.Net
             string headerJson = JsonSerializer.Serialize(header, SerializerOptions);
             
             // Process data
-            string computedHeader = null;
             Utf8ValueStringBuilder builder = ZString.CreateUtf8StringBuilder();
-            ValueUsing<Utf8ValueStringBuilder>.Use(ref builder, (ref Utf8ValueStringBuilder usedBuilder) =>
+            try
             {
-                ArraySegment<byte> headerJsonBytes = StringUtils.GetUtf8BytesNonAlloc(ref usedBuilder, headerJson);
+                ArraySegment<byte> headerJsonBytes = StringUtils.GetUtf8BytesNonAlloc(ref builder, headerJson);
                 ArraySegment<char> headerJsonBytesBase64 = Encoder.ToBaseNonAlloc(headerJsonBytes);
-                computedHeader = headerJsonBytesBase64.MakeString();
-            });
-
-            return computedHeader;
+                return headerJsonBytesBase64.MakeString();
+            }
+            finally
+            {
+                builder.Dispose();
+            }
         }
     }
     
