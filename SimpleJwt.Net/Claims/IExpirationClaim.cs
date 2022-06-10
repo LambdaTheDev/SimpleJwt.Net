@@ -1,10 +1,8 @@
-using System;
-
-namespace LambdaTheDev.SimpleJwt.Net.Claims
+﻿namespace LambdaTheDev.SimpleJwt.Net.Claims
 {
-    // Expiration claim, shows when JWT expires. Auto validated by library
+    // Expiration (EXP) claim implementation
     public interface IExpirationClaim
     {
-        DateTime Exp { get; set; }
+        long Exp { get; set; }
     }
 }

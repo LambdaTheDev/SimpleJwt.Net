@@ -1,10 +1,8 @@
-using System;
-
-namespace LambdaTheDev.SimpleJwt.Net.Claims
+﻿namespace LambdaTheDev.SimpleJwt.Net.Claims
 {
-    // Issued at claim, shows when JWT token was issued. Auto validated by library
+    // IssuedAt (IAT) claim implementation
     public interface IIssuedAtClaim
     {
-        DateTime Iat { get; set; }
+        long Iat { get; set; }
     }
 }

@@ -1,11 +1,8 @@
-using System;
-
-namespace LambdaTheDev.SimpleJwt.Net.Claims
+﻿namespace LambdaTheDev.SimpleJwt.Net.Claims
 {
-    // Not before claim, it represents a date from what JWT token can be used.
-    // Auto validated by library.
+    // NotBefore (NBF) claim implementation
     public interface INotBeforeClaim
     {
-        DateTime Nbf { get; set; }
+        long Nbf { get; set; }
     }
 }

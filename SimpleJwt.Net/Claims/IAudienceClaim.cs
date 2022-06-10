@@ -1,6 +1,6 @@
-namespace LambdaTheDev.SimpleJwt.Net.Claims
+﻿namespace LambdaTheDev.SimpleJwt.Net.Claims
 {
-    // Audience claim, generic argument specifies type for audience identifier type
+    // Audience (AUD) claim implementation
     public interface IAudienceClaim<T>
     {
         T Aud { get; set; }

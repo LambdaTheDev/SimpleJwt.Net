@@ -1,9 +1,8 @@
-namespace LambdaTheDev.SimpleJwt.Net.Claims
+﻿namespace LambdaTheDev.SimpleJwt.Net.Claims
 {
-    // JWT Id claim, shows ID of a JWT. I used int as an identifier. If there is a need
-    //  to use longs/ulongs, please contact me
-    public interface IJwtIdClaim
+    // JWT ID (JTI) claim implementation
+    public interface IJwtIdClaim<T>
     {
-        int Jti { get; set; }
+        T Jti { get; set; }
     }
 }
