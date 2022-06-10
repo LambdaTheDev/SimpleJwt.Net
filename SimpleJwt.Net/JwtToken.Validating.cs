@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Cysharp.Text;
 using LambdaTheDev.SimpleJwt.Net.Claims;
+using LambdaTheDev.SimpleJwt.Net.Extensions;
 using LambdaTheDev.SimpleJwt.Net.Utils;
 
 namespace LambdaTheDev.SimpleJwt.Net
@@ -21,7 +22,7 @@ namespace LambdaTheDev.SimpleJwt.Net
             TokenPart rawHeader = new TokenPart(token, parts.HeaderOffset, parts.HeaderCount);
             TokenPart rawPayload = new TokenPart(token, parts.PayloadOffset, parts.PayloadCount);
             TokenPart rawSignature = new TokenPart(token, parts.SignatureOffset, parts.SignatureCount);
-
+            
             Utf8ValueStringBuilder builder = ZString.CreateUtf8StringBuilder();
             try
             {
@@ -44,13 +45,13 @@ namespace LambdaTheDev.SimpleJwt.Net
                 // IMPORTANT NOTE: JsonSerializer.Deserialize method accepts UTF-8 bytes as an deserialization argument. I am gonna use it, but I'm unsure if Unity supports it.
                 //  If users will need Unity support (below 2021.2), I will figure out something
                 ArraySegment<byte> payloadJsonBytes = StringUtils.FrameworkSafeGetBase64BytesFromTokenPart(options, rawPayload);
-                var deserializedPayload = JsonSerializer.Deserialize<T>(payloadJsonBytes, options.SerializerOptions);
+                T deserializedPayload = JsonSerializer.Deserialize<T>(payloadJsonBytes, options.SerializerOptions);
 
                 // Clear builder buffer
                 builder.Clear();
                 
                 // Validate date-related claims
-                JwtValidationResult result = ValidateClaims(payload);
+                JwtValidationResult result = ValidateClaims(deserializedPayload);
                 if (result == JwtValidationResult.Success) payload = deserializedPayload;
                 return result;
             }
@@ -66,7 +67,7 @@ namespace LambdaTheDev.SimpleJwt.Net
             int requiredTokenLength = options.PreComputedHeader.Length;
             if (options.Algorithm.SignatureSize != -1) requiredTokenLength += options.Algorithm.SignatureSize;
             requiredTokenLength += 2 + 2; // Add 2 dots and at least some 2 data chars
-
+            
             if (token.Length < requiredTokenLength)
             {
                 parts = default;
@@ -79,22 +80,23 @@ namespace LambdaTheDev.SimpleJwt.Net
                 parts = default;
                 return false;
             }
-
+            
             int headerOffset = 0, headerCount = options.PreComputedHeader.Length;
             
             // Now check for signature. If it's constant size, do it as above, otherwise reverse for & find out first dot
-            int signatureOffset = -1, signatureCount = -1;
+            int signatureOffset = -1, signatureCount;
             
             if (options.Algorithm.SignatureSize != -1)
             {
-                if (token[token.Length - options.Algorithm.SignatureSize - 1] != '.')
+                // Note: Constant size hash algorithms will return invalid token instead of invalid signature!
+                if (token[token.Length - options.Algorithm.GetSignatureChars() - 1] != '.')
                 {
                     parts = default;
                     return false;
                 }
-
-                signatureOffset = token.Length - options.Algorithm.SignatureSize;
-                signatureCount = options.Algorithm.SignatureSize;
+                
+                signatureOffset = token.Length - options.Algorithm.GetSignatureChars();
+                signatureCount = options.Algorithm.GetSignatureChars();
             }
             else
             {
@@ -146,7 +148,7 @@ namespace LambdaTheDev.SimpleJwt.Net
         private static JwtValidationResult ValidateClaims<T>(T payload)
         {
             // Validate date-related claims
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             if (payload is IIssuedAtClaim iat)
             {

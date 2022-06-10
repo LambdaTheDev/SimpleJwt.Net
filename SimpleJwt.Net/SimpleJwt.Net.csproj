@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <PackageVersion>1.1.0</PackageVersion>
+        <PackageVersion>2.0.0</PackageVersion>
         <Title>SimpleJwt.Net</Title>
         <Authors>LambdaTheDev</Authors>
         <PackageProjectUrl>https://github.com/LambdaTheDev/SimpleJwt.Net</PackageProjectUrl>
@@ -13,7 +13,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Description>Library that allows you to issue &amp; validate Json Web Tokens with custom claims easily.</Description>
         <RepositoryType>git</RepositoryType>
-        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <AssemblyVersion>2.0.0</AssemblyVersion>
         <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     </PropertyGroup>
 

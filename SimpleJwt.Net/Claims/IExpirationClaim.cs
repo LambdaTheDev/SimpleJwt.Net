@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace LambdaTheDev.SimpleJwt.Net.Claims
+﻿namespace LambdaTheDev.SimpleJwt.Net.Claims
 {
     // Expiration (EXP) claim implementation
     public interface IExpirationClaim
     {
-        DateTimeOffset Exp { get; set; }
+        long Exp { get; set; }
     }
 }

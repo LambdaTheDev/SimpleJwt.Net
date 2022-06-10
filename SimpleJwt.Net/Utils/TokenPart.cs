@@ -14,5 +14,10 @@
             Offset = offset;
             Count = count;
         }
+
+        internal string Debug()
+        {
+            return Target.Substring(Offset, Count);
+        }
     }
 }
