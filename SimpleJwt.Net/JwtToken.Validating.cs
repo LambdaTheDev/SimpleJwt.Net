@@ -3,14 +3,13 @@ using System.Text.Json;
 using Cysharp.Text;
 using LambdaTheDev.SimpleJwt.Net.Claims;
 using LambdaTheDev.SimpleJwt.Net.Extensions;
-using LambdaTheDev.SimpleJwt.Net.Utils;
 
 namespace LambdaTheDev.SimpleJwt.Net
 {
     // Class that validates & returns JWT token basing on JwtTokenOptions & string token
     public static partial class JwtToken
     {
-        public static JwtValidationResult Validate<T>(JwtTokenOptions options, string token, out T payload)
+        public static JwtValidationResult Validate<T>(JwtTokenOptions options, ReadOnlySpan<char> token, out T payload)
         {
             payload = default;
             
@@ -19,18 +18,18 @@ namespace LambdaTheDev.SimpleJwt.Net
             if (!splitSuccessfully) return JwtValidationResult.InvalidToken;
             
             // Prepare data for validation
-            TokenPart rawHeader = new TokenPart(token, parts.HeaderOffset, parts.HeaderCount);
-            TokenPart rawPayload = new TokenPart(token, parts.PayloadOffset, parts.PayloadCount);
-            TokenPart rawSignature = new TokenPart(token, parts.SignatureOffset, parts.SignatureCount);
-            
+            ReadOnlySpan<char> rawHeader = token.Slice(parts.HeaderOffset, parts.HeaderCount);
+            ReadOnlySpan<char> rawPayload = token.Slice(parts.PayloadOffset, parts.PayloadCount);
+            ReadOnlySpan<char> rawSignature = token.Slice(parts.SignatureOffset, parts.SignatureCount);
+
             Utf8ValueStringBuilder builder = ZString.CreateUtf8StringBuilder();
             try
             {
                 // Start validating token
                 builder.Clear();
-                builder.AppendTokenPart(rawHeader);
+                builder.Append(rawHeader);
                 builder.Append('.');
-                builder.AppendTokenPart(rawPayload);
+                builder.Append(rawPayload);
                 
                 // Re-compute signature
                 ArraySegment<byte> combinedBytes = builder.AsArraySegment();
@@ -44,7 +43,7 @@ namespace LambdaTheDev.SimpleJwt.Net
                 // Deserialize payload
                 // IMPORTANT NOTE: JsonSerializer.Deserialize method accepts UTF-8 bytes as an deserialization argument. I am gonna use it, but I'm unsure if Unity supports it.
                 //  If users will need Unity support (below 2021.2), I will figure out something
-                ArraySegment<byte> payloadJsonBytes = StringUtils.FrameworkSafeGetBase64BytesFromTokenPart(options, rawPayload);
+                ArraySegment<byte> payloadJsonBytes = options.Encoder.FromBaseNonAlloc(rawPayload);
                 T deserializedPayload = JsonSerializer.Deserialize<T>(payloadJsonBytes, options.SerializerOptions);
 
                 // Clear builder buffer
@@ -61,7 +60,7 @@ namespace LambdaTheDev.SimpleJwt.Net
             }
         }
 
-        private static bool TrySplitToken(JwtTokenOptions options, string token, out TokenParts parts)
+        private static bool TrySplitToken(JwtTokenOptions options, ReadOnlySpan<char> token, out TokenParts parts)
         {
             // Ensure that token is long enough to hold data
             int requiredTokenLength = options.PreComputedHeader.Length;
@@ -129,15 +128,15 @@ namespace LambdaTheDev.SimpleJwt.Net
         }
 
         // Checks if computed signature matches signature token part
-        private static bool ValidateSignature(ArraySegment<char> computed, TokenPart signaturePart)
+        private static bool ValidateSignature(ArraySegment<char> computed, ReadOnlySpan<char> signaturePart)
         {
             if (computed.Array == null) return false;
-            if (computed.Count != signaturePart.Count) return false;
+            if (computed.Count != signaturePart.Length) return false;
 
             int computedOffset = computed.Offset;
             for (int i = 0; i < computed.Count; i++)
             {
-                if (computed.Array[computedOffset + i] != signaturePart.Target[signaturePart.Offset + i])
+                if (computed.Array[computedOffset + i] != signaturePart[i])
                     return false;
             }
 

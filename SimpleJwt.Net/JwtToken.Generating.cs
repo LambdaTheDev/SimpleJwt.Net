@@ -14,7 +14,7 @@ namespace LambdaTheDev.SimpleJwt.Net
             try
             {
                 // Prepare StringBuilder
-                string token = null;
+                string token;
                
                 // Generate payload data
                 string payloadJson = JsonSerializer.Serialize(payload, options.SerializerOptions);
